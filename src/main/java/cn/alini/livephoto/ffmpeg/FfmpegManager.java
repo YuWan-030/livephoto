@@ -2,6 +2,7 @@ package cn.alini.livephoto.ffmpeg;
 
 import cn.alini.livephoto.client.DownloadProgressHud;
 import cn.alini.livephoto.core.ConfigState;
+import net.minecraft.client.resources.language.I18n;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,6 +37,13 @@ public class FfmpegManager {
 
     /** 异步确保 ffmpeg 可用：若本地已有则立即 completed，不再启动下载线程 */
     public static CompletableFuture<Path> ensureFfmpegReadyAsync() {
+        ConfigState cfg = ConfigState.get();
+        if (cfg.ffmpegPath != null && !cfg.ffmpegPath.isBlank()) {
+            Path p = Path.of(cfg.ffmpegPath);
+            if (!Files.isRegularFile(p) || !Files.isExecutable(p)) {
+                cfg.ffmpegPath = ""; // 无效则清空
+            }
+        }
         Optional<Path> local = findLocalExecutable();
         if (local.isPresent()) {
             ConfigState.get().ffmpegPath = local.get().toAbsolutePath().toString();
@@ -45,7 +53,7 @@ public class FfmpegManager {
 
         downloading = CompletableFuture.supplyAsync(() -> {
             try {
-                DownloadProgressHud.begin("下载 ffmpeg...");
+                DownloadProgressHud.begin(I18n.get("livephoto.hud.downloading"));
                 Path r = ensureFfmpegReadyBlocking();
                 DownloadProgressHud.end();
                 return r;
@@ -75,7 +83,7 @@ public class FfmpegManager {
         downloadExecutable(exePath);
 
         local = findLocalExecutable();
-        if (local.isEmpty()) throw new IOException("ffmpeg 下载后未找到可执行文件");
+        if (local.isEmpty()) throw new IOException("ffmpeg downloaded but not found");
         ConfigState.get().ffmpegPath = local.get().toAbsolutePath().toString();
         return local.get();
     }
@@ -113,27 +121,24 @@ public class FfmpegManager {
                 read += n;
                 if (total > 0) {
                     float p = (float) read / (float) total;
-                    DownloadProgressHud.update(p, String.format("下载 ffmpeg... %.0f%%", p * 100));
+                    DownloadProgressHud.update(p, I18n.get("livephoto.hud.downloading"));
                 } else {
-                    DownloadProgressHud.indeterminate("下载 ffmpeg...");
+                    DownloadProgressHud.indeterminate(I18n.get("livephoto.hud.downloading"));
                 }
             }
         }
         long size = Files.size(dest);
-        if (size < MIN_BYTES) throw new IOException("ffmpeg 下载文件过小，可能失败");
+        if (size < MIN_BYTES) throw new IOException("ffmpeg file too small");
         dest.toFile().setExecutable(true, false);
     }
 
     private static String pickDownloadUrl() {
-        // 这里请替换为“直链可执行文件”URL。示例（需自行确认可用性）：
         if (isWindows()) {
-            // 你可以改成自己的直链，例如自托管的 ffmpeg.exe
             return "http://127.0.0.1:5000/ffmpeg.exe";
         }
         if (isMac()) {
             return GH_PROXY + "https://evermeet.cx/ffmpeg/ffmpeg-" + FFMPEG_VERSION;
         }
-        // Linux 示例：自托管静态 ffmpeg
         return "http://127.0.0.1:5000/ffmpeg-linux";
     }
 

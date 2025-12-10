@@ -1,0 +1,33 @@
+{
+  "screen.livephoto.title": "实况照片配置",
+
+  "livephoto.enabled": "启用: %s",
+  "livephoto.protocol": "协议: %s",
+  "livephoto.protocol.motion": "MOTION（谷歌实况）",
+  "livephoto.protocol.live": "LIVE（苹果实况）",
+  "livephoto.protocol.both": "BOTH（同时）",
+
+  "livephoto.duration": "时长: %s 秒",
+  "livephoto.fps": "帧率: %s",
+  "livephoto.scale": "分辨率缩放: x%s",
+  "livephoto.keep_png": "保留原版 PNG: %s",
+  "livephoto.enable_audio": "启用音频: %s",
+  "livephoto.device": "音频设备: %s",
+  "livephoto.refresh_devices": "刷新设备列表",
+  "livephoto.auto_download_ffmpeg": "自动下载 ffmpeg: %s",
+  "livephoto.save_back": "保存并返回",
+  "livephoto.cancel": "取消",
+
+  "livephoto.msg.downloading_ffmpeg": "LivePhoto: 正在下载 ffmpeg，请稍后再试",
+  "livephoto.msg.ffmpeg_unavailable": "LivePhoto: ffmpeg 不可用",
+  "livephoto.msg.recording": "LivePhoto: 正在录制 %s 秒实况视频...",
+  "livephoto.msg.error": "LivePhoto 错误: %s",
+  "livephoto.hud.downloading": "下载 ffmpeg...",
+
+  "livephoto.toast.enabled": "LivePhoto 已开启",
+  "livephoto.toast.disabled": "LivePhoto 已关闭",
+
+  "key.livephoto.config": "打开 LivePhoto 配置",
+  "key.livephoto.toggle": "切换 LivePhoto",
+  "key.categories.misc": "杂项"
+}

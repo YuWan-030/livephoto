@@ -3,6 +3,7 @@ package cn.alini.livephoto.client;
 import cn.alini.livephoto.core.ConfigState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import org.lwjgl.glfw.GLFW;
 
@@ -18,14 +19,18 @@ public class Keybinds {
     }
 
     public static void handleKeyInput() {
+        Minecraft mc = Minecraft.getInstance();
         if (OPEN_CONFIG != null && OPEN_CONFIG.consumeClick()) {
-            Minecraft mc = Minecraft.getInstance();
             mc.setScreen(new LivephotoConfigScreen(mc.screen));
         }
         if (TOGGLE_LIVE != null && TOGGLE_LIVE.consumeClick()) {
             ConfigState cfg = ConfigState.get();
             cfg.enabled = !cfg.enabled;
-            // TODO: 显示 HUD/Toast 提示当前开关
+            // 屏幕中间下方提示
+            Component tip = cfg.enabled
+                    ? Component.translatable("livephoto.toast.enabled")
+                    : Component.translatable("livephoto.toast.disabled");
+            mc.gui.setOverlayMessage(tip, false);
         }
     }
 }

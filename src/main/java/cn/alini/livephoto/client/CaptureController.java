@@ -41,12 +41,12 @@ public class CaptureController {
 
             CompletableFuture<Path> futureFfmpeg = FfmpegManager.ensureFfmpegReadyAsync();
             if (!futureFfmpeg.isDone()) {
-                event.setResultMessage(Component.literal("LivePhoto: 正在下载 ffmpeg，请稍后再试"));
+                event.setResultMessage(Component.translatable("livephoto.msg.downloading_ffmpeg"));
                 return;
             }
             Path ffmpeg = futureFfmpeg.get();
             if (!Files.exists(ffmpeg) || !Files.isExecutable(ffmpeg)) {
-                event.setResultMessage(Component.literal("LivePhoto: ffmpeg 不可用"));
+                event.setResultMessage(Component.translatable("livephoto.msg.ffmpeg_unavailable"));
                 return;
             }
 
@@ -65,7 +65,6 @@ public class CaptureController {
                 try {
                     if (tempDir == null) tempDir = Files.createTempDirectory("livephoto-frames-");
 
-                    // 规范化帧
                     int idx = 0;
                     if (res.frames() != null && !res.frames().isEmpty()) {
                         for (Path p : res.frames()) {
@@ -73,32 +72,45 @@ public class CaptureController {
                             Files.copy(p, dst, StandardCopyOption.REPLACE_EXISTING);
                         }
                     }
-                    if (idx == 0) { // 没帧则用截图填一帧
+                    if (idx == 0) { // 没帧则用截图填一帧（若存在）
                         Path first = tempDir.resolve("f_00000.png");
-                        Files.copy(targetPng, first, StandardCopyOption.REPLACE_EXISTING);
-                        idx = 1;
+                        if (Files.exists(targetPng)) {
+                            Files.copy(targetPng, first, StandardCopyOption.REPLACE_EXISTING);
+                            idx = 1;
+                        }
                     }
-                    // 追加当前截图为最后一帧
+
+                    Path sourceForLast = null;
+                    if (Files.exists(targetPng)) {
+                        sourceForLast = targetPng;
+                    } else if (res.frames() != null && !res.frames().isEmpty() && Files.exists(res.frames().get(0))) {
+                        sourceForLast = res.frames().get(0);
+                    }
+                    if (sourceForLast == null) {
+                        return; // 没有可用源帧
+                    }
+
                     Path last = tempDir.resolve(String.format("f_%05d.png", idx));
-                    Files.copy(targetPng, last, StandardCopyOption.REPLACE_EXISTING);
+                    Files.copy(sourceForLast, last, StandardCopyOption.REPLACE_EXISTING);
                     int totalFrames = idx + 1;
 
                     double durSec = Math.max(0.033, res.durationSeconds());
                     float realFps = Math.max(1f, (float) totalFrames / (float) durSec);
 
-                    // 编码中间 MP4 + 提取封面
-                    FfmpegInvoker.createVideoFromDir(ffmpeg, tempDir, videoMp4, realFps);
+                    String audioDevice = (cfg.audio && cfg.audioDevice != null && !cfg.audioDevice.isBlank())
+                            ? cfg.audioDevice : null;
+                    Path audioFile = null; // 已取消用户自定义音频文件输入
+
+                    FfmpegInvoker.createVideoFromDir(ffmpeg, tempDir, videoMp4, realFps, audioDevice, audioFile);
                     FfmpegInvoker.extractCover(ffmpeg, videoMp4, coverJpg);
 
-                    // 生成最终文件
-                    Path motionJpg = screenshotsDir.resolve("Android_"+baseName + "_motion_live.jpg");
-                    Path liveMov = screenshotsDir.resolve("iOS_"+baseName + "_live.mov");
-                    Path liveJpg = screenshotsDir.resolve("iOS_"+baseName + "_live.jpg");
+                    Path motionJpg = screenshotsDir.resolve("Android_" + baseName + "_motion_live.jpg");
+                    Path liveMov = screenshotsDir.resolve("iOS_" + baseName + "_live.mov");
+                    Path liveJpg = screenshotsDir.resolve("iOS_" + baseName + "_live.jpg");
 
                     switch (cfg.protocol) {
                         case MOTION -> {
                             MotionPhotoPlaceholder.build(coverJpg, videoMp4, motionJpg);
-                            // 清理中间件
                             Files.deleteIfExists(videoMp4);
                             Files.deleteIfExists(coverJpg);
                         }
@@ -118,7 +130,6 @@ public class CaptureController {
                     e.printStackTrace();
                     try { Files.deleteIfExists(videoMp4); } catch (Exception ignore) {}
                 } finally {
-                    // 清理临时帧和目录
                     try {
                         if (res.frames() != null) for (Path p : res.frames()) Files.deleteIfExists(p);
                         if (res.tempDir() != null) {
@@ -129,9 +140,9 @@ public class CaptureController {
                 }
             }, EXEC);
 
-            event.setResultMessage(Component.literal("LivePhoto: 成功拍摄 " + cfg.durationSeconds + "s 的实况视频(稍后生成文件)"));
+            event.setResultMessage(Component.translatable("livephoto.msg.recording", cfg.durationSeconds));
         } catch (Exception e) {
-            event.setResultMessage(Component.literal("LivePhoto error: " + e.getMessage()));
+            event.setResultMessage(Component.translatable("livephoto.msg.error", e.getMessage()));
             e.printStackTrace();
         }
     }

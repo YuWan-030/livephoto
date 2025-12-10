@@ -8,8 +8,9 @@ import java.nio.file.Path;
 
 public class FfmpegInvoker {
 
-    /** 从目录内的 f_%05d.png 序列编码，支持可选音轨；失败抛出日志并删除输出 */
-    public static void createVideoFromDir(Path ffmpeg, Path framesDir, Path outVideo, float fps, Path audioInput)
+    /** 带可选音源：audioDevice（WASAPI设备名）优先，其次 audioFile，均为空则静音轨 */
+    public static void createVideoFromDir(Path ffmpeg, Path framesDir, Path outVideo, float fps,
+                                          String audioDevice, Path audioFile)
             throws IOException, InterruptedException {
 
         ProcessBuilder pb = new ProcessBuilder();
@@ -18,12 +19,16 @@ public class FfmpegInvoker {
         pb.command().add("-framerate"); pb.command().add(String.valueOf(fps));
         pb.command().add("-i"); pb.command().add(framesDir.resolve("f_%05d.png").toString());
 
-        if (audioInput != null && Files.exists(audioInput)) {
-            pb.command().add("-i"); pb.command().add(audioInput.toString());
+        if (audioDevice != null && !audioDevice.isBlank()) {
+            pb.command().add("-f"); pb.command().add("wasapi");
+            pb.command().add("-i"); pb.command().add(audioDevice);
+            pb.command().add("-map"); pb.command().add("0:v:0");
+            pb.command().add("-map"); pb.command().add("1:a:0");
+        } else if (audioFile != null && Files.exists(audioFile)) {
+            pb.command().add("-i"); pb.command().add(audioFile.toString());
             pb.command().add("-map"); pb.command().add("0:v:0");
             pb.command().add("-map"); pb.command().add("1:a:0");
         } else {
-            // 加一条静音轨，避免缺音轨导致播放器识别不到音频流
             pb.command().add("-f"); pb.command().add("lavfi");
             pb.command().add("-i"); pb.command().add("anullsrc=channel_layout=stereo:sample_rate=48000");
             pb.command().add("-map"); pb.command().add("0:v:0");
@@ -56,10 +61,10 @@ public class FfmpegInvoker {
         }
     }
 
-    /** 旧方法保留，默认无外部音频（将生成静音轨） */
+    /** 兼容旧签名：无音源参数 */
     public static void createVideoFromDir(Path ffmpeg, Path framesDir, Path outVideo, float fps)
             throws IOException, InterruptedException {
-        createVideoFromDir(ffmpeg, framesDir, outVideo, fps, null);
+        createVideoFromDir(ffmpeg, framesDir, outVideo, fps, null, null);
     }
 
     public static void createVideoFromFrames(Path ffmpeg, java.util.List<Path> frames, Path outVideo, float fps)
@@ -71,7 +76,7 @@ public class FfmpegInvoker {
                 String name = String.format("f_%05d.png", idx++);
                 java.nio.file.Files.copy(f, tempDir.resolve(name), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
             }
-            createVideoFromDir(ffmpeg, tempDir, outVideo, fps, null);
+            createVideoFromDir(ffmpeg, tempDir, outVideo, fps, null, null);
         } finally {
             try (var s = java.nio.file.Files.list(tempDir)) {
                 s.forEach(f -> { try { java.nio.file.Files.deleteIfExists(f); } catch (IOException ignored) {} });

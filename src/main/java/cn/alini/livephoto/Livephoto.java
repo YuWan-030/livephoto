@@ -1,5 +1,6 @@
 package cn.alini.livephoto;
 
+import cn.alini.livephoto.core.ConfigState;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
@@ -12,8 +13,10 @@ public class Livephoto {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     public Livephoto() {
+        // 加载配置
+        ConfigState.load();
+
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
-        // 这里可注册配置、网络消息等
         LOGGER.info("[livephoto] mod loaded");
     }
 }

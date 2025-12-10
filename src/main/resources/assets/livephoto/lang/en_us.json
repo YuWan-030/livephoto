@@ -1,0 +1,33 @@
+{
+  "screen.livephoto.title": "Live Photo Config",
+
+  "livephoto.enabled": "Enabled: %s",
+  "livephoto.protocol": "Protocol: %s",
+  "livephoto.protocol.motion": "MOTION",
+  "livephoto.protocol.live": "LIVE",
+  "livephoto.protocol.both": "BOTH",
+
+  "livephoto.duration": "Duration: %s s",
+  "livephoto.fps": "FPS: %s",
+  "livephoto.scale": "Scale: x%s",
+  "livephoto.keep_png": "Keep vanilla PNG: %s",
+  "livephoto.enable_audio": "Enable audio: %s",
+  "livephoto.device": "Device: %s",
+  "livephoto.refresh_devices": "Refresh devices",
+  "livephoto.auto_download_ffmpeg": "Auto-download ffmpeg: %s",
+  "livephoto.save_back": "Save & Back",
+  "livephoto.cancel": "Cancel",
+
+  "livephoto.msg.downloading_ffmpeg": "LivePhoto: downloading ffmpeg, please try again later",
+  "livephoto.msg.ffmpeg_unavailable": "LivePhoto: ffmpeg unavailable",
+  "livephoto.msg.recording": "LivePhoto: recording %s s live video...",
+  "livephoto.msg.error": "LivePhoto error: %s",
+  "livephoto.hud.downloading": "Downloading ffmpeg...",
+
+  "livephoto.toast.enabled": "LivePhoto enabled",
+  "livephoto.toast.disabled": "LivePhoto disabled",
+
+  "key.livephoto.config": "Open LivePhoto config",
+  "key.livephoto.toggle": "Toggle LivePhoto",
+  "key.categories.misc": "Miscellaneous"
+}
