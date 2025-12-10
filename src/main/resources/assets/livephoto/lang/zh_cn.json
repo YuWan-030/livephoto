@@ -2,6 +2,7 @@
   "screen.livephoto.title": "实况照片配置",
 
   "livephoto.enabled": "启用: %s",
+  "livephoto.msg.completed": "LivePhoto: 已生成 %s，目录：%s",
   "livephoto.protocol": "协议: %s",
   "livephoto.protocol.motion": "MOTION（谷歌实况）",
   "livephoto.protocol.live": "LIVE（苹果实况）",

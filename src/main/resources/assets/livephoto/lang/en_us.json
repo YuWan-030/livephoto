@@ -2,6 +2,7 @@
   "screen.livephoto.title": "Live Photo Config",
 
   "livephoto.enabled": "Enabled: %s",
+  "livephoto.msg.completed": "LivePhoto: generated %s in %s",
   "livephoto.protocol": "Protocol: %s",
   "livephoto.protocol.motion": "MOTION",
   "livephoto.protocol.live": "LIVE",

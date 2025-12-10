@@ -3,6 +3,7 @@ package cn.alini.livephoto.client;
 import cn.alini.livephoto.core.ConfigState;
 import cn.alini.livephoto.ffmpeg.FfmpegInvoker;
 import cn.alini.livephoto.ffmpeg.FfmpegManager;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.client.event.ScreenshotEvent;
 
@@ -126,6 +127,13 @@ public class CaptureController {
                             Files.deleteIfExists(coverJpg);
                         }
                     }
+
+                    // 成功提示（屏幕中间下方），在主线程调用
+                    Minecraft.getInstance().execute(() ->
+                            Minecraft.getInstance().gui.setOverlayMessage(
+                                    Component.translatable("livephoto.msg.completed", baseName, screenshotsDir.toString()),
+                                    false));
+
                 } catch (Exception e) {
                     e.printStackTrace();
                     try { Files.deleteIfExists(videoMp4); } catch (Exception ignore) {}
